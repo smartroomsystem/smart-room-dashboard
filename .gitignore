@@ -1,0 +1,9 @@
+.env
+.env.local
+generate_hash.php
+time_test.php
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
