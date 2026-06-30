@@ -7,7 +7,7 @@ RUN set -ex; \
     ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load; \
     ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf; \
     ls -la /etc/apache2/mods-enabled/ | grep mpm; \
-    a2enmod rewrite
+    a2enmod rewrite && echo "cache-bust-1"
 
 COPY . /var/www/html/
 
