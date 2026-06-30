@@ -1,20 +1,4 @@
 <?php
-
-/**
- * Sends a 6-digit OTP verification email using Brevo's HTTP API.
- * Uses HTTPS (port 443) instead of SMTP, which avoids Railway's
- * outbound SMTP port blocking ("Network is unreachable" errors).
- *
- * Unlike Resend's free tier (which requires a verified domain to send
- * to arbitrary recipients), Brevo's free tier only requires verifying
- * a single SENDER EMAIL ADDRESS — no domain needed — and can then send
- * to any recipient.
- *
- * @param string $toEmail   Recipient email address.
- * @param string $otpCode   The 6-digit random code.
- * @param string $username  Optional username for personalizing the message body.
- * @return bool             True if sent successfully, false otherwise.
- */
 function sendOTP($toEmail, $otpCode, $username = "User")
 {
     $apiKey = getenv('BREVO_API_KEY');
@@ -25,8 +9,6 @@ function sendOTP($toEmail, $otpCode, $username = "User")
     }
 
     $payload = [
-        // This MUST be an email address you have verified as a sender
-        // inside your Brevo account (Senders & IP > Senders).
         "sender" => [
             "name"  => "Smart Room Security",
             "email" => "smartroomclimatecontrolsystem@gmail.com",
