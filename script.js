@@ -153,7 +153,10 @@ async function connectSerial() {
         setStatus("CONNECTED", "normal");
         showToast("Arduino Connected", "success");
 
-        // Serial is now live — stop the passive DB poll (readData drives updates now)
+        // Serial is now live — stop the passive 3s poll. The table/chart/
+        // counters are instead refreshed directly from
+        // saveRecordToDatabase() every time a reading is successfully
+        // written, so nothing goes stale while connected.
         stopHistoryPolling();
         readData();
     } catch (err) {
@@ -286,7 +289,7 @@ async function readData() {
 // ─── DATABASE SAVE ────────────────────────────────────────────
 async function saveRecordToDatabase(temp, fan, status) {
     try {
-        await fetch("save_reading.php", {
+        const res = await fetch("save_reading.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -295,9 +298,23 @@ async function saveRecordToDatabase(temp, fan, status) {
                 system_status: status
             })
         });
-        // Don't trigger a table refresh here — the 3s poll handles it.
+
+        const result = await res.json();
+
+        if (result.status === "success") {
+            // FIX: while connected, the 3s poll is stopped (see
+            // connectSerial()), so nothing else refreshes the table,
+            // chart, or counters. Trigger that refresh here, right after
+            // each successful write, so the UI reflects the new row
+            // immediately instead of only updating after Disconnect.
+            fetchAndRenderTable();
+        } else {
+            console.error("save_reading.php rejected the write:", result.message);
+            showToast("Save failed: " + result.message, "error");
+        }
     } catch (error) {
         console.error("Failed to connect to save_reading.php:", error);
+        showToast("Network error while saving reading.", "error");
     }
 }
 
